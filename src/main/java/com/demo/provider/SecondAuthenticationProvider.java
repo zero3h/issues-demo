@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import com.demo.data.token.LoginAuthenticationToken;
 import com.demo.exception.CustomAuthenticationException;
 
+//=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING
+// FIXME @link{AuthenticationEventListener } can't catch the
+// event when I add this code @link{@Component }.
 @Component
 public class SecondAuthenticationProvider implements AuthenticationProvider {
 

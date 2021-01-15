@@ -11,4 +11,6 @@ header: Content-Type=application/x-www-form-urlencoded
 param:username=xx&password=xx
 ```
 
-3. `AuthenticationEventListener` can catch the event unless I add the code `.and().apply(secondAuthenticationSecurityConfig)` in `WebSecurityConfig.configure(HttpSecurity http)`.
+3. `AuthenticationEventListener` can catch the event unless I add the code `.and().apply(secondAuthenticationSecurityConfig)` in `WebSecurityConfig.configure(HttpSecurity http)`. 
+
+4. 2021.01.15. To be exact, `AuthenticationEventListener` can catch the events when more than one `AuthenticationEventListener` is registered.
