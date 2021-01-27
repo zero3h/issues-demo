@@ -2,15 +2,23 @@
 A minimal GitHub sample application. https://github.com/spring-projects/spring-security/issues/9313.
 
 # starter
-1. run the  class `App`
-2. request the url to debug
+Run the  class `com.demo.App.java`
+
+# reproduce
+1. Access address through browser: http://localhost:8080/front/login/normal?username=demo&password=demo1232
+2. `CustomAuthenticationException` can be catch.
 
 ```
-POST url: http://localhost:8080/front/login/normal
-header: Content-Type=application/x-www-form-urlencoded
-param:username=xx&password=xx
+console output:
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : custom exception enter listener!! event is com.demo.data.event.CustomAuthenticationExceptionEvent
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
+2021-01-22 17:56:43.237 DEBUG 26376 --- [nio-8080-exec-1] c.d.l.AuthenticationEventListener        : -------------------
 ```
 
-3. `AuthenticationEventListener` can catch the event unless I add the code `.and().apply(secondAuthenticationSecurityConfig)` in `WebSecurityConfig.configure(HttpSecurity http)`. 
 
-4. 2021.01.15. To be exact, `AuthenticationEventListener` can catch the events when more than one `AuthenticationEventListener` is registered.
+3. If I add second provider, `AuthenticationEventListener` can't catch this error! (`com.demo.provider.SecondLoginAuthenticationProvider` add `@Component`.
+

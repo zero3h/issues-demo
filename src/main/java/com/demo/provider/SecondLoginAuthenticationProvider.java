@@ -5,16 +5,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
 
+import com.demo.config.WebSecurityConfig;
+import com.demo.data.event.CustomAuthenticationExceptionEvent;
 import com.demo.data.token.LoginAuthenticationToken;
 import com.demo.exception.CustomAuthenticationException;
 
-//=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING
-// FIXME @link{AuthenticationEventListener } can't catch the
-// event when I add this code @link{@Component }.
-@Component
-public class SecondAuthenticationProvider implements AuthenticationProvider {
+/**
+ * =====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING
+ * FIXME @link{AuthenticationEventListener } can't catch the event
+ * {@link CustomAuthenticationExceptionEvent} when I add this
+ * code @link{@Component }. <br>
+ * <b>Tip:</b>{@link CustomAuthenticationExceptionEvent} was registered in
+ * {@link WebSecurityConfig#authenticationEventPublisher(org.springframework.context.ApplicationEventPublisher)}
+ *
+ */
+// @Component
+public class SecondLoginAuthenticationProvider implements AuthenticationProvider {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -30,7 +37,7 @@ public class SecondAuthenticationProvider implements AuthenticationProvider {
 		try {
 			throwsNewEx();
 		} catch (Exception e) {
-			throw new CustomAuthenticationException("custom login fail!(SecondAuthenticationProvider)", -100);
+			throw new CustomAuthenticationException("custom login fail!(SecondLoginAuthenticationProvider)", -100);
 		}
 
 		return null;

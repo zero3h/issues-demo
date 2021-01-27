@@ -8,9 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -21,7 +19,6 @@ import com.demo.data.bo.LoginBo;
 import com.demo.data.token.LoginAuthenticationToken;
 
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-	private boolean postOnly = true;
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -32,10 +29,6 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException, IOException, ServletException {
-
-		if (postOnly && !request.getMethod().equals(HttpMethod.POST.name())) {
-			throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
-		}
 
 		LoginBo bo = new LoginBo();
 		ServletRequestDataBinder binder = new ServletRequestDataBinder(bo);

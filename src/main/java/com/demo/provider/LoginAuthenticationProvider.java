@@ -17,6 +17,7 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+
 		LoginAuthenticationToken token = (LoginAuthenticationToken) authentication;
 		String principal = (String) token.getPrincipal();
 		String credentials = (String) token.getCredentials();

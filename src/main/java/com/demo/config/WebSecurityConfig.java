@@ -17,53 +17,68 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.demo.data.event.CustomAuthenticationExceptionEvent;
 import com.demo.exception.CustomAuthenticationException;
-import com.demo.intercepter.GlobalAuthenticationIntercepter;
+import com.demo.filter.LoginAuthenticationFilter;
+import com.demo.handler.FailureHandler;
+import com.demo.provider.LoginAuthenticationProvider;
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
-	private GlobalAuthenticationIntercepter globalAuthenticationIntercepter;
-	@Autowired
-	private LoginAuthenticationSecurityConfig customLoginAuthenticationSecurityConfig;
-	@Autowired
-	private SecondAuthenticationSecurityConfig secondAuthenticationSecurityConfig;
-	@Autowired
 	private ApplicationContext applicationContext;
+	@Autowired
+	private LoginAuthenticationProvider loginAuthenticationProvider;
+
+	//
+	// FIXME @link{AuthenticationEventListener } can't catch the
+	// event when I add this code @link{@Component }.
+	/**
+	 * =====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING
+	 * FIXME @link{AuthenticationEventListener } can't catch the event {@link }
+	 * when the Provider was Autowired.
+	 */
+
+	@Autowired
+	private FailureHandler failureHandler;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// no session
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
 
+		// custom login url
 		http.authorizeRequests().antMatchers("/front/login/**").permitAll();
 
-		// setting
-		http.httpBasic().and()
-				// to authenticated
-				.authorizeRequests().anyRequest().authenticated()
-				// global handler
-				.and().exceptionHandling().authenticationEntryPoint(globalAuthenticationIntercepter).and()
-				// no csrf
-				.csrf().disable()
-				// custom login config
-				.apply(customLoginAuthenticationSecurityConfig)
-				// custom second login config
-				// =====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING=====WARNING
-				// FIXME @link{AuthenticationEventListener } can't catch the
-				// event when I add this code.
-				.and().apply(secondAuthenticationSecurityConfig)
-				// custom logout url
-				.and().logout().logoutUrl("/front/logout");
+		http.csrf().disable().authorizeRequests().anyRequest().authenticated().and().csrf().disable()
+				.apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+					@Override
+					public void configure(HttpSecurity builder) throws Exception {
+						// custom login filter, to catch parameters(username and
+						// password)
+						LoginAuthenticationFilter filter = new LoginAuthenticationFilter("/front/login/normal",
+								HttpMethod.GET.name());
+						filter.setAuthenticationManager(builder.getSharedObject(AuthenticationManager.class));
+						// custom login fail handler
+						filter.setAuthenticationFailureHandler(failureHandler);
+						// custom login authentication provider
+						builder.authenticationProvider(loginAuthenticationProvider).addFilterBefore(filter,
+								UsernamePasswordAuthenticationFilter.class);
+						super.configure(builder);
+					}
+				}).and().logout().permitAll();
 		logger.info("WebSecurityConfig loading successfully.");
 	}
 
@@ -82,7 +97,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	/**
-	 * setAdditionalExceptionMappings to DefaultAuthenticationEventPublisher
+	 * add custom exception {@link CustomAuthenticationException} to
+	 * {@link DefaultAuthenticationEventPublisher}
+	 * 
 	 * 
 	 * @param publisher
 	 * @return
@@ -91,7 +108,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public DefaultAuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher publisher) {
 		DefaultAuthenticationEventPublisher defaultAuthenticationEventPublisher = new DefaultAuthenticationEventPublisher(
 				publisher);
-
 		Properties additionalExceptionMappings = new Properties();
 		additionalExceptionMappings.put(CustomAuthenticationException.class.getName(),
 				CustomAuthenticationExceptionEvent.class.getName());
